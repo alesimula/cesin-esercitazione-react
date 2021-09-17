@@ -4,7 +4,7 @@ import './index.css';
 import reportWebVitals from './reportWebVitals';
 import axios from "axios";
 import { Route, Switch } from 'react-router';
-import { HashRouter, Link , useHistory} from 'react-router-dom';
+import { HashRouter, Link , useHistory, withRouter} from 'react-router-dom';
 import { render } from '@testing-library/react';
 
 
@@ -93,12 +93,13 @@ class Remove extends React.Component {
 
   removeCliente() {
     let self = this;
+    //const history = useHistory();
 
-    this.serverRequest = axios.post(`http://localhost:8080/remove/${this.props.match.params.id}`)
+    this.serverRequest = axios.post(`http://localhost:8080/cliente/remove/${this.props.match.params.id}`)
         .then(result => {
-            useHistory().push('/');
+            self.props.history.push("/");
         }).catch(function(error) {
-            console.log("====> " + error)
+            //console.log("====> " + error)
         }).then(function() {
             //console.log("====> in finally")
         })
@@ -147,8 +148,8 @@ ReactDOM.render(
   <HashRouter>
     <Switch>
       <Route exact path='/' component={Clienti} /> 
-      <Route path='/edit/:id' component={Edit} />
-      <Route path='/remove/:id' component={Remove} />
+      <Route path='/edit/:id' component={withRouter(Edit)} />
+      <Route path='/remove/:id' component={withRouter(Remove)} />
     </Switch>
   </HashRouter>,
   document.getElementById('root')
