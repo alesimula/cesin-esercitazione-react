@@ -30,7 +30,7 @@ class Clienti extends React.Component {
                 <th class="text-center"><div><i class="bi bi-trash btn btn-danger"></i></div></th>
               </tr>
             ))
-            //self.setState({clienti: clienti})
+            self.setState({clienti: clienti})
         }).catch(function(error) {
             console.log("====> " + error)
         }).then(function() {
