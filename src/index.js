@@ -93,13 +93,12 @@ class Remove extends React.Component {
 
   removeCliente() {
     let self = this;
-    //const history = useHistory();
 
     this.serverRequest = axios.post(`http://localhost:8080/cliente/remove/${this.props.match.params.id}`)
         .then(result => {
             self.props.history.push("/");
         }).catch(function(error) {
-            //console.log("====> " + error)
+            console.log("====> " + error)
         }).then(function() {
             //console.log("====> in finally")
         })
@@ -125,18 +124,37 @@ class Remove extends React.Component {
 }
 
 class Edit extends React.Component {
+
+  saveCliente() {
+    let self = this;
+
+    this.serverRequest = axios.post(`http://localhost:8080/cliente/edit`)
+        .then(result => {
+            self.props.history.push("/");
+        }).catch(function(error) {
+            console.log("====> " + error)
+        }).then(function() {
+            //console.log("====> in finally")
+        })
+  } 
+
+
+
   render() {
     let modal = (
         <div class="modal-content">
             <div class="modal-header">
-                <h5 id="modal-title" class="modal-title">Conferm deletion</h5>
+                <h5 id="modal-title" class="modal-title">Edit Client</h5>
             </div>
             <div class="modal-body">
-                <p id="modal-dialog">Delete client {this.props.id || "BOH"}?</p>
+                <input defaultValue={this.props.match.params.id} type="number" id="modal-dialog"></input>
+                <input defaultValue={this.props.match.params.name} type="text" id="modal-dialog"></input>
+                <input defaultValue={this.props.match.params.address} type="text" id="modal-dialog"></input>
+                <input type="checkbox" id="modal-dialog"></input>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button id="modal-confirm" type="button" class="btn btn-primary">Confirm</button>
+                <Link type="button" class="btn btn-secondary" data-dismiss="modal" to={`/`}>Cancel</Link>
+                <button id="modal-confirm" type="button" class="btn btn-primary" onClick={this.saveCliente}>Save</button>
             </div>
         </div>
   )
