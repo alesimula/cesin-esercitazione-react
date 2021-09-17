@@ -1,12 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-
 import reportWebVitals from './reportWebVitals';
 import axios from "axios";
-
 import { Route, Switch } from 'react-router';
-import { HashRouter, Link } from 'react-router-dom';
+import { HashRouter, Link , useHistory} from 'react-router-dom';
 import { render } from '@testing-library/react';
 
 
@@ -85,12 +83,52 @@ class Clienti extends React.Component {
   }
 }
 
-class Test extends React.Component {
+class Remove extends React.Component {
+
+  constructor(props) {
+    super(props);
+
+    this.removeCliente = this.removeCliente.bind(this);
+  }
+
+  removeCliente() {
+    let self = this;
+
+    this.serverRequest = axios.post(`http://localhost:8080/remove/${this.props.match.params.id}`)
+        .then(result => {
+            useHistory().push('/');
+        }).catch(function(error) {
+            console.log("====> " + error)
+        }).then(function() {
+            //console.log("====> in finally")
+        })
+  } 
+
   render() {
     let modal = (
         <div class="modal-content">
             <div class="modal-header">
-                <h5 id="modal-title" class="modal-title">Conferm deletion</h5>            
+                <h5 id="modal-title" class="modal-title">Conferm deletion</h5>
+            </div>
+            <div class="modal-body">
+                <p id="modal-dialog">Delete client {this.props.match.params.id || "BOH"}?</p>
+            </div>
+            <div class="modal-footer">
+                <Link type="button" class="btn btn-secondary" data-dismiss="modal" to={`/`}>Cancel</Link>
+                <button id="modal-confirm" type="button" class="btn btn-primary" onClick={this.removeCliente}>Confirm</button>
+            </div>
+        </div>
+  )
+  return modal;
+  }
+}
+
+class Edit extends React.Component {
+  render() {
+    let modal = (
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="modal-title" class="modal-title">Conferm deletion</h5>
             </div>
             <div class="modal-body">
                 <p id="modal-dialog">Delete client {this.props.id || "BOH"}?</p>
@@ -109,8 +147,8 @@ ReactDOM.render(
   <HashRouter>
     <Switch>
       <Route exact path='/' component={Clienti} /> 
-      <Route path='/edit/:id' component={Test} />
-      <Route path='/remove/:id' component={Test} />
+      <Route path='/edit/:id' component={Edit} />
+      <Route path='/remove/:id' component={Remove} />
     </Switch>
   </HashRouter>,
   document.getElementById('root')
