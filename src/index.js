@@ -29,7 +29,13 @@ class Clienti extends React.Component {
                 <th class="text-center">{cliente.id}</th>
                 <th class="text-center">{cliente.name}</th>
                 <th class="text-center">{cliente.address}</th>
-                <th class="text-center"><input type="checkbox" checked={cliente.public ? "true" : "false"}/></th>
+                <th class="text-center">
+                  <div class="custom-control custom-checkbox">
+                    <label class="sr-only position-static"></label>
+                    <input class="custom-control-input" type="checkbox" checked={cliente.public ? true : false}/>
+                    <span class="custom-control-label"></span>
+                  </div>
+                </th>
                 <th class="text-center"><Link to={`/edit/${cliente.id}`}><i class="bi bi-pencil-square btn btn-info"></i></Link></th>
                 <th class="text-center"><Link to={`/remove/${cliente.id}`}><i class="bi bi-trash btn btn-danger"></i></Link></th>
               </tr>
