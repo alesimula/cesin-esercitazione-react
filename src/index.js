@@ -1,4 +1,5 @@
 import React from 'react';
+import {useState} from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
@@ -6,6 +7,7 @@ import axios from "axios";
 import { Route, Switch } from 'react-router';
 import { HashRouter, Link , useHistory, withRouter} from 'react-router-dom';
 import { render } from '@testing-library/react';
+import {Modal, Button} from 'react-bootstrap'
 
 
 class Clienti extends React.Component {
@@ -83,94 +85,125 @@ class Clienti extends React.Component {
   }
 }
 
+
+class Rename extends React.Component {
+  closeModal = (() => {
+    if (this.props?.showDialog) {
+      this.props.history.push("/")
+    }
+  }).bind(this)
+
+  confirmModal = (() => {
+    let self = this
+
+    if (this.props?.showDialog) axios.post(`http://localhost:8080/cliente/edit`)
+        .then(result => {
+            self.closeModal()
+        }).catch(function(error) {
+            console.log("====> " + error)
+        }).then(function() {
+            //console.log("====> in finally")
+        })
+  }).bind(this)
+
+  render() {
+    return (
+      <Modal show={this.props.showDialog} onHide={this.closeModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Edit client</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div class="form-group">
+              <label class="col-md-7 control-label" for="title">Title</label>
+                <div class="col-md-6">
+                <input defaultValue={this.props.match.params.name} type="text" id="client-name" class="form-control input-md"/>
+                </div>
+          </div>
+
+          <div class="form-group">
+              <label class="col-md-7 control-label" for="title">Title</label>
+                <div class="col-md-6">
+                <input defaultValue={this.props.match.params.name} type="text" id="client-name2" class="form-control input-md"/>
+                </div>
+          </div>
+          
+          <div class="col-auto">
+            <div class="custom-control custom-checkbox mr-sm-2">
+              <input type="checkbox" class="custom-control-input" id="client-public"/>
+              <label class="custom-control-label form-check-label" for="client-public">Public</label>
+            </div>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={this.closeModal}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={this.closeModal}>
+            Save
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    )
+  }
+}
+Rename = withRouter(Rename)
+
+
 class Remove extends React.Component {
+  closeModal = (() => {
+    if (this.props?.showDialog) {
+      this.props.history.push("/")
+    }
+  }).bind(this)
 
-  constructor(props) {
-    super(props);
-
-    this.removeCliente = this.removeCliente.bind(this);
-  }
-
-  removeCliente() {
+  confirmModal = (() => {
     let self = this;
 
-    this.serverRequest = axios.post(`http://localhost:8080/cliente/remove/${this.props.match.params.id}`)
+    if (this.props?.showDialog) axios.post(`http://localhost:8080/cliente/remove/${this.props.match.params.id}`)
         .then(result => {
-            self.props.history.push("/");
+            self.closeModal()
         }).catch(function(error) {
             console.log("====> " + error)
         }).then(function() {
             //console.log("====> in finally")
         })
-  } 
+  }).bind(this)
 
   render() {
-    let modal = (
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 id="modal-title" class="modal-title">Conferm deletion</h5>
-            </div>
-            <div class="modal-body">
-                <p id="modal-dialog">Delete client {this.props.match.params.id || "BOH"}?</p>
-            </div>
-            <div class="modal-footer">
-                <Link type="button" class="btn btn-secondary" data-dismiss="modal" to={`/`}>Cancel</Link>
-                <button id="modal-confirm" type="button" class="btn btn-primary" onClick={this.removeCliente}>Confirm</button>
-            </div>
-        </div>
-  )
-  return modal;
+    return (
+      <Modal show={this.props.showDialog} onHide={this.closeModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm deletion</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Delete client {this.props.match.params.id || "ERROR"}?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={this.closeModal}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={this.confirmModal}>
+            Confirm
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    )
   }
 }
+Remove = withRouter(Remove)
 
-class Edit extends React.Component {
-
-  saveCliente() {
-    let self = this;
-
-    this.serverRequest = axios.post(`http://localhost:8080/cliente/edit`)
-        .then(result => {
-            self.props.history.push("/");
-        }).catch(function(error) {
-            console.log("====> " + error)
-        }).then(function() {
-            //console.log("====> in finally")
-        })
-  } 
-
-
-
-  render() {
-    let modal = (
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 id="modal-title" class="modal-title">Edit Client</h5>
-            </div>
-            <div class="modal-body">
-                <input defaultValue={this.props.match.params.id} type="number" id="modal-dialog"></input>
-                <input defaultValue={this.props.match.params.name} type="text" id="modal-dialog"></input>
-                <input defaultValue={this.props.match.params.address} type="text" id="modal-dialog"></input>
-                <input type="checkbox" id="modal-dialog"></input>
-            </div>
-            <div class="modal-footer">
-                <Link type="button" class="btn btn-secondary" data-dismiss="modal" to={`/`}>Cancel</Link>
-                <button id="modal-confirm" type="button" class="btn btn-primary" onClick={this.saveCliente}>Save</button>
-            </div>
-        </div>
-  )
-  return modal;
-  }
-}
  
 ReactDOM.render(
   <HashRouter>
     <Switch>
-      <Route exact path='/' component={Clienti} /> 
-      <Route path='/edit/:id' component={withRouter(Edit)} />
-      <Route path='/remove/:id' component={withRouter(Remove)} />
+      <Route exact path='/' component={Rename}/>
+      <Route path='/edit/:id' render={() => <Rename showDialog={true}/>}/>
     </Switch>
+    <Switch>
+      <Route exact path='/' component={Remove}/>
+      <Route path='/remove/:id' render={() => <Remove showDialog={true}/>}/>
+    </Switch>
+    <Clienti/>
   </HashRouter>,
   document.getElementById('root')
-);
+)
 
 reportWebVitals();
