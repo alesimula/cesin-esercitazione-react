@@ -9,6 +9,9 @@ import { HashRouter, Link , useHistory, withRouter} from 'react-router-dom';
 import { render } from '@testing-library/react';
 import {Modal, Button} from 'react-bootstrap'
 
+import { connect, Provider } from 'react-redux';
+import { combineReducers, createStore } from 'redux';
+
 
 class Clienti extends React.Component {
 
@@ -25,7 +28,7 @@ class Clienti extends React.Component {
     this.serverRequest = axios.get("http://localhost:8080/cliente/list")
         .then(result => {
             let clienti = result.data.map(cliente => (
-              <tr>
+              <tr class="jumbotron">
                 <td class="text-center">{cliente.id}</td>
                 <td class="text-center">{cliente.name}</td>
                 <td class="text-center">{cliente.address}</td>
@@ -92,6 +95,18 @@ class Clienti extends React.Component {
 }
 
 
+const editMap = (operation, id, data) => {
+  return {
+      type: ['INIT', 'ADD', 'REMOVE', 'EDIT'].includes(operation) ? operation : 
+          (()=>{throw new Error(`Illegal redux operation: ${operation}`)})(), 
+      id: parseInt(id),
+      data: data
+  }
+}
+
+
+@connect(({clientMap, dispatch}) => ({clientMap, dispatch}))
+@withRouter
 class Rename extends React.Component {
   closeModal = (() => {
     if (this.props?.showDialog) {
@@ -152,9 +167,10 @@ class Rename extends React.Component {
     )
   }
 }
-Rename = withRouter(Rename)
 
 
+@connect(({clientMap, dispatch}) => ({clientMap, dispatch}))
+@withRouter
 class Remove extends React.Component {
   closeModal = (() => {
     if (this.props?.showDialog) {
@@ -168,6 +184,7 @@ class Remove extends React.Component {
     if (this.props?.showDialog) axios.post(`http://localhost:8080/cliente/remove/${this.props.match.params.id}`)
         .then(result => {
             self.closeModal()
+            //this.props.store?.dispatch(editMap('ADD'))
         }).catch(function(error) {
             console.log("====> " + error)
         }).then(function() {
@@ -176,6 +193,8 @@ class Remove extends React.Component {
   }).bind(this)
 
   render() {
+    //alert(this.props.dispatch)
+    //alert(JSON.stringify(this.props.clientMap))
     return (
       <Modal show={this.props.showDialog} onHide={this.closeModal}>
         <Modal.Header closeButton>
@@ -194,21 +213,46 @@ class Remove extends React.Component {
     )
   }
 }
-Remove = withRouter(Remove)
 
- 
+
+const operations = (state=new Map(), operation) => {
+
+  console.log(state);
+  console.log(operation);
+
+  switch(operation.type) {
+    case 'INIT':
+      state.clear()
+      return new Map(operation.data.map(e => [e.id, e]));
+    case 'ADD':
+      state.set(operation.id, operation.data)
+      return state
+    case 'REMOVE':
+      state.delete(operation.id)
+      return state
+    case 'EDIT':
+      if (state.has(operation.id)) state.set(operation.id, operation.data)
+    default:
+      return state;
+  }
+}
+
+let store = createStore(combineReducers({clientMap: operations}));
+
 ReactDOM.render(
-  <HashRouter>
-    <Switch>
-      <Route exact path='/' component={Rename}/>
-      <Route path='/edit/:id' render={() => <Rename showDialog={true}/>}/>
-    </Switch>
-    <Switch>
-      <Route exact path='/' component={Remove}/>
-      <Route path='/remove/:id' render={() => <Remove showDialog={true}/>}/>
-    </Switch>
-    <Clienti/>
-  </HashRouter>,
+  <Provider store={store}>
+    <HashRouter>
+      <Switch>
+        <Route exact path='/' component={Rename}/>
+        <Route path='/edit/:id' render={() => <Rename showDialog={true}/>}/>
+      </Switch>
+      <Switch>
+        <Route exact path='/' component={Remove}/>
+        <Route path='/remove/:id' render={() => <Remove showDialog={true}/>}/>
+      </Switch>
+      <Clienti/>
+    </HashRouter>
+  </Provider>,
   document.getElementById('root')
 )
 
