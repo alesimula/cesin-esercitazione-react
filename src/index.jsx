@@ -12,7 +12,7 @@ import {Modal, Button} from 'react-bootstrap'
 import { connect, Provider } from 'react-redux';
 import { combineReducers, createStore } from 'redux';
 
-
+@connect(({clientState, dispatch}) => ({clients: clientState.map, opCount: clientState.opCount, dispatch}))
 class Clienti extends React.Component {
 
   constructor(props) {
@@ -105,7 +105,7 @@ const editMap = (operation, id, data) => {
 }
 
 
-@connect(({clientMap, dispatch}) => ({clientMap, dispatch}))
+@connect(({clientState, dispatch}) => ({clients: clientState.map, dispatch}))
 @withRouter
 class Rename extends React.Component {
   closeModal = (() => {
@@ -169,7 +169,7 @@ class Rename extends React.Component {
 }
 
 
-@connect(({clientMap, dispatch}) => ({clientMap, dispatch}))
+@connect(({clientState, dispatch}) => ({clients: clientState.map, dispatch}))
 @withRouter
 class Remove extends React.Component {
   closeModal = (() => {
@@ -194,7 +194,7 @@ class Remove extends React.Component {
 
   render() {
     //alert(this.props.dispatch)
-    //alert(JSON.stringify(this.props.clientMap))
+    //alert(JSON.stringify(this.props.clients))
     return (
       <Modal show={this.props.showDialog} onHide={this.closeModal}>
         <Modal.Header closeButton>
@@ -215,29 +215,30 @@ class Remove extends React.Component {
 }
 
 
-const operations = (state=new Map(), operation) => {
+const operations = (state={map: new Map(), opCount: 0}, operation) => {
 
   console.log(state);
   console.log(operation);
 
   switch(operation.type) {
     case 'INIT':
-      state.clear()
-      return new Map(operation.data.map(e => [e.id, e]));
+      state.map.clear()
+      return {map: new Map(operation.data.map(e => [e.id, e])), opCount: 0}
     case 'ADD':
-      state.set(operation.id, operation.data)
-      return state
+      state.map.state.set(operation.data.id, operation.data)
+      return {map: state.map, opCount: ++state.opCount}
     case 'REMOVE':
-      state.delete(operation.id)
-      return state
+      state.map.delete(parseInt(operation.data))
+      return {map: state.map, opCount: ++state.opCount}
     case 'EDIT':
-      if (state.has(operation.id)) state.set(operation.id, operation.data)
+      if (state.map.has(operation.data?.id)) state.map.set(operation.data.id, operation.data)
+      return {map: state.map, opCount: ++state.opCount}
     default:
       return state;
   }
 }
 
-let store = createStore(combineReducers({clientMap: operations}));
+let store = createStore(combineReducers({clientState: operations}));
 
 ReactDOM.render(
   <Provider store={store}>
