@@ -1,12 +1,10 @@
 import React from 'react';
-import {useState} from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 import axios from "axios";
 import { Route, Switch } from 'react-router';
-import { HashRouter, Link , useHistory, withRouter} from 'react-router-dom';
-import { render } from '@testing-library/react';
+import { HashRouter, Link , withRouter} from 'react-router-dom';
 import {Modal, Button} from 'react-bootstrap'
 
 import { connect, Provider } from 'react-redux';
@@ -46,19 +44,19 @@ class Clienti extends React.Component {
   }
 
   getTable = () => [...this.props.clients.values()].map( (cliente, index) => (
-    <tr class={index % 2 == 0 ? "" : "jumbotron"}>
-      <td class="text-center">{cliente.id}</td>
-      <td class="text-center">{cliente.name}</td>
-      <td class="text-center">{cliente.address}</td>
-      <td class="text-center">
-        <div class="custom-control custom-checkbox">
-          <label class="sr-only position-static"></label>
-          <input class="custom-control-input" type="checkbox" checked={cliente.public ? true : false}/>
-          <span class="custom-control-label"></span>
+    <tr key={cliente.id} className={index % 2 === 0 ? "" : "jumbotron"}>
+      <td className="text-center">{cliente.id}</td>
+      <td className="text-center">{cliente.name}</td>
+      <td className="text-center">{cliente.address}</td>
+      <td className="text-center">
+        <div className="custom-control custom-checkbox">
+          <label className="sr-only position-static"></label>
+          <input className="custom-control-input" type="checkbox" checked={cliente.public ? true : false} readOnly={true}/>
+          <span className="custom-control-label"></span>
         </div>
       </td>
-      <td class="text-center"><Link to={`/edit/${cliente.id}`}><i class="bi bi-pencil-square btn btn-info"></i></Link></td>
-      <td class="text-center"><Link to={`/remove/${cliente.id}`}><i class="bi bi-trash btn btn-danger"></i></Link></td>
+      <td className="text-center"><Link to={`/edit/${cliente.id}`}><i className="bi bi-pencil-square btn btn-info"></i></Link></td>
+      <td className="text-center"><Link to={`/remove/${cliente.id}`}><i className="bi bi-trash btn btn-danger"></i></Link></td>
     </tr>
   ))
 
@@ -70,15 +68,19 @@ class Clienti extends React.Component {
     return(
       <div>
         <table className="table">
-          <tr className="thead-dark">
-            <th className="text-center">ID</th>
-            <th className="text-center">Name</th>
-            <th className="text-center">Address</th>
-            <th className="text-center">Public</th>
-            <th className="text-center">edit</th>
-            <th className="text-center">delete</th>
-          </tr>
-          {this.getTable()}
+          <thead>
+            <tr className="thead-dark">
+              <th className="text-center">ID</th>
+              <th className="text-center">Name</th>
+              <th className="text-center">Address</th>
+              <th className="text-center">Public</th>
+              <th className="text-center">edit</th>
+              <th className="text-center">delete</th>
+            </tr>
+          </thead>
+          <tbody>
+            {this.getTable()}
+          </tbody>
         </table>
       </div>
     )
@@ -93,13 +95,10 @@ class Rename extends React.Component {
     if (this.props?.showDialog) {
       this.props.history.push("/")
     }
-  }).bind(this)
+  })
 
   confirmModal = (() => {
     let self = this
-
-    //alert(`nome nuovo: ${this.name} - indirizzo nuovo: ${this.address} - pubblico: ${this.public}`)
-
     let datiCliente = {id: this.id, name: this.name, address: this.address, public: this.public}
 
 
@@ -112,12 +111,12 @@ class Rename extends React.Component {
         }).then(function() {
             //console.log("====> in finally")
         })
-  }).bind(this)
+  })
 
   render() {
     let newId = parseInt(this.props.match.params.id)
 
-    if (this.id != newId) {
+    if (this.id !== newId) {
       this.id = newId
       this.cliente = this.props.clients.get(this.id)
 
@@ -132,24 +131,24 @@ class Rename extends React.Component {
           <Modal.Title>Edit client</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <div class="form-group">
-              <label class="col-md-7 control-label" for="name">Name</label>
-                <div class="col-md-6">
-                <input defaultValue={this.name} onChange={e => this.name = e.target.value} type="text" id="client-name" class="form-control input-md"/>
+          <div className="form-group">
+              <label className="col-md-7 control-label" htmlFor="name">Name</label>
+                <div className="col-md-6">
+                <input defaultValue={this.name} onChange={e => this.name = e.target.value} type="text" id="client-name" className="form-control input-md"/>
                 </div>
           </div>
 
-          <div class="form-group">
-              <label class="col-md-7 control-label" for="address">Address</label>
-                <div class="col-md-6">
-                <input defaultValue={this.address} onChange={e => this.address = e.target.value} type="text" id="client-address" class="form-control input-md"/>
+          <div className="form-group">
+              <label className="col-md-7 control-label" htmlFor="address">Address</label>
+                <div className="col-md-6">
+                <input defaultValue={this.address} onChange={e => this.address = e.target.value} type="text" id="client-address" className="form-control input-md"/>
                 </div>
           </div>
           
-          <div class="col-auto">
-            <div class="custom-control custom-checkbox mr-sm-2">
-              <input onChange={e => this.public = e.target.checked} type="checkbox" class="custom-control-input" id="client-public" defaultChecked={this.public ? true : false}/>
-              <label class="custom-control-label form-check-label" for="client-public">Public</label>
+          <div className="col-auto">
+            <div className="custom-control custom-checkbox mr-sm-2">
+              <input onChange={e => this.public = e.target.checked} type="checkbox" className="custom-control-input" id="client-public" defaultChecked={this.public ? true : false}/>
+              <label className="custom-control-label form-check-label" htmlFor="client-public">Public</label>
             </div>
           </div>
         </Modal.Body>
@@ -174,7 +173,7 @@ class Remove extends React.Component {
     if (this.props?.showDialog) {
       this.props.history.push("/")
     }
-  }).bind(this)
+  })
 
   confirmModal = (() => {
     let self = this;
@@ -188,7 +187,7 @@ class Remove extends React.Component {
         }).then(function() {
             //console.log("====> in finally")
         })
-  }).bind(this)
+  })
 
   render() {
     this.id = parseInt(this.props.match.params.id || this.id)
