@@ -39,6 +39,7 @@ class Clienti extends React.Component {
         .then(result => {
             self.props.dispatch(editMap('INIT', result.data))
         }).catch(function(error) {
+            self.props.dispatch(editMap('INIT', []))
             console.log("====> " + error)
         }).then(function() {
             //console.log("====> in finally")
