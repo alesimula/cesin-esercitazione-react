@@ -12,6 +12,12 @@ import { combineReducers, createStore } from 'redux';
 import Immutable from 'immutable';
 
 
+/**
+ * Funzione di Redux da chiamare detro la dispatch
+ * @param {*} operation operazione da effettuare (e.g. 'INIT', 'ADD'...)
+ * @param {*} data parametro dell'operazione
+ * @returns JSON che rappresenta l'operazione Redux
+ */
 const editMap = (operation, data) => {
   return {
       type: ['INIT', 'ADD', 'REMOVE', 'EDIT'].includes(operation) ? operation : 
@@ -22,6 +28,9 @@ const editMap = (operation, data) => {
 const EMPTY_MAP = Immutable.Map()
 
 
+/**
+ * Componente: tabella dei clienti
+ */
 @connect(({clientState, dispatch}) => ({clients: clientState.map, opCount: clientState.opCount, dispatch}))
 class Clienti extends React.Component {
 
@@ -91,6 +100,9 @@ class Clienti extends React.Component {
 }
 
 
+/**
+ * Componente: finestra di dialogo per la modifica di un cliente
+ */
 @connect(({clientState, dispatch}) => ({clients: clientState.map, dispatch}))
 @withRouter
 class Rename extends React.Component {
@@ -170,6 +182,9 @@ class Rename extends React.Component {
 }
 
 
+/**
+ * Componente: finestra di dialogo per l'eliminazione di un cliente
+ */
 @connect(({clientState, dispatch}) => ({clients: clientState.map, dispatch}))
 @withRouter
 class Remove extends React.Component {
@@ -217,7 +232,12 @@ class Remove extends React.Component {
   }
 }
 
-
+/**
+ * Metodo di definizione delle operazioni di Redux
+ * @param {*} state stato di redux
+ * @param {*} operation JSON dell'operazione
+ * @returns stato di Redux
+ */
 const operations = (state={map: EMPTY_MAP, opCount: 0}, operation) => {
 
   console.log(state);
@@ -228,17 +248,21 @@ const operations = (state={map: EMPTY_MAP, opCount: 0}, operation) => {
   }
 
   switch(operation.type) {
+    //Inizializzazione mappa (parametro = lista di clienti)
     case 'INIT':
       if (state.map !== EMPTY_MAP) state.map.clear()
       return {map: new Map(operation.data.map(e => [e.id, e])), opCount: 0}
+    //Aggiunta cliente alla mappa (parametro = un cliente)
     case 'ADD':
       initMap()
       state.map.state.set(operation.data.id, operation.data)
       return {map: state.map, opCount: ++state.opCount}
+    //Eliminazione cliente dalla mappa (parametro = un ID)
     case 'REMOVE':
       initMap()
       state.map.delete(parseInt(operation.data))
       return {map: state.map, opCount: ++state.opCount}
+    //Modifica cliente nella mappa (parametro = un cliente)
     case 'EDIT':
       initMap()
       if (state.map.has(operation.data?.id)) state.map.set(operation.data.id, operation.data)
@@ -248,6 +272,9 @@ const operations = (state={map: EMPTY_MAP, opCount: 0}, operation) => {
   }
 }
 
+/**
+ * Creazione dello store di Redux
+ */
 let store = createStore(combineReducers({clientState: operations}));
 
 ReactDOM.render(
