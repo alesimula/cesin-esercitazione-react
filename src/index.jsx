@@ -45,8 +45,8 @@ class Clienti extends React.Component {
         })
   }
 
-  getTable = () => [...this.props.clients.values()].map(cliente => (
-    <tr class="jumbotron">
+  getTable = () => [...this.props.clients.values()].map( (cliente, index) => (
+    <tr class={index % 2 == 0 ? "" : "jumbotron"}>
       <td class="text-center">{cliente.id}</td>
       <td class="text-center">{cliente.name}</td>
       <td class="text-center">{cliente.address}</td>
@@ -98,9 +98,15 @@ class Rename extends React.Component {
   confirmModal = (() => {
     let self = this
 
-    if (this.props?.showDialog) axios.post(`http://localhost:8080/cliente/edit`)
+    //alert(`nome nuovo: ${this.name} - indirizzo nuovo: ${this.address} - pubblico: ${this.public}`)
+
+    let datiCliente = {id: this.id, name: this.name, address: this.address, public: this.public}
+
+
+    if (this.props?.showDialog) axios.post(`http://localhost:8080/cliente/edit`, datiCliente)
         .then(result => {
             self.closeModal()
+            self.props.dispatch(editMap('EDIT', datiCliente))
         }).catch(function(error) {
             console.log("====> " + error)
         }).then(function() {
@@ -109,6 +115,17 @@ class Rename extends React.Component {
   }).bind(this)
 
   render() {
+    let newId = parseInt(this.props.match.params.id)
+
+    if (this.id != newId) {
+      this.id = newId
+      this.cliente = this.props.clients.get(this.id)
+
+      this.name = this.cliente?.name
+      this.address = this.cliente?.address
+      this.public = this.cliente?.public ? true : false
+    }
+
     return (
       <Modal show={this.props.showDialog} onHide={this.closeModal}>
         <Modal.Header closeButton>
@@ -116,22 +133,22 @@ class Rename extends React.Component {
         </Modal.Header>
         <Modal.Body>
           <div class="form-group">
-              <label class="col-md-7 control-label" for="title">Title</label>
+              <label class="col-md-7 control-label" for="name">Name</label>
                 <div class="col-md-6">
-                <input defaultValue={this.props.match.params.name} type="text" id="client-name" class="form-control input-md"/>
+                <input defaultValue={this.name} onChange={e => this.name = e.target.value} type="text" id="client-name" class="form-control input-md"/>
                 </div>
           </div>
 
           <div class="form-group">
-              <label class="col-md-7 control-label" for="title">Title</label>
+              <label class="col-md-7 control-label" for="address">Address</label>
                 <div class="col-md-6">
-                <input defaultValue={this.props.match.params.name} type="text" id="client-name2" class="form-control input-md"/>
+                <input defaultValue={this.address} onChange={e => this.address = e.target.value} type="text" id="client-address" class="form-control input-md"/>
                 </div>
           </div>
           
           <div class="col-auto">
             <div class="custom-control custom-checkbox mr-sm-2">
-              <input type="checkbox" class="custom-control-input" id="client-public"/>
+              <input onChange={e => this.public = e.target.checked} type="checkbox" class="custom-control-input" id="client-public" defaultChecked={this.public ? true : false}/>
               <label class="custom-control-label form-check-label" for="client-public">Public</label>
             </div>
           </div>
@@ -140,7 +157,7 @@ class Rename extends React.Component {
           <Button variant="secondary" onClick={this.closeModal}>
             Cancel
           </Button>
-          <Button variant="primary" onClick={this.closeModal}>
+          <Button variant="primary" onClick={this.confirmModal}>
             Save
           </Button>
         </Modal.Footer>
@@ -165,7 +182,7 @@ class Remove extends React.Component {
     if (this.props?.showDialog) axios.post(`http://localhost:8080/cliente/remove/${this.props.match.params.id}`)
         .then(result => {
             self.closeModal()
-            //this.props.store?.dispatch(editMap('ADD'))
+            self.props.dispatch(editMap('REMOVE', this.id))
         }).catch(function(error) {
             console.log("====> " + error)
         }).then(function() {
@@ -174,14 +191,15 @@ class Remove extends React.Component {
   }).bind(this)
 
   render() {
-    //alert(this.props.dispatch)
-    //alert(JSON.stringify(this.props.clients))
+    this.id = parseInt(this.props.match.params.id || this.id)
+    this.cliente = this.props.clients.get(this.id)
+
     return (
       <Modal show={this.props.showDialog} onHide={this.closeModal}>
         <Modal.Header closeButton>
           <Modal.Title>Confirm deletion</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Delete client {this.props.match.params.id || "ERROR"}?</Modal.Body>
+        <Modal.Body>Delete client {this.cliente?.name || "ERROR"}?</Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={this.closeModal}>
             Cancel
