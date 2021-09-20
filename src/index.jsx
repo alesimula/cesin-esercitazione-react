@@ -9,6 +9,7 @@ import {Modal, Button} from 'react-bootstrap'
 
 import { connect, Provider } from 'react-redux';
 import { combineReducers, createStore } from 'redux';
+import Immutable from 'immutable';
 
 
 const editMap = (operation, data) => {
@@ -18,6 +19,7 @@ const editMap = (operation, data) => {
       data: data
   }
 }
+const EMPTY_MAP = Immutable.Map()
 
 
 @connect(({clientState, dispatch}) => ({clients: clientState.map, opCount: clientState.opCount, dispatch}))
@@ -116,9 +118,10 @@ class Rename extends React.Component {
   render() {
     let newId = parseInt(this.props.match.params.id)
 
-    if (this.id !== newId) {
+    if (this.id !== newId || !this.cliente) {
       this.id = newId
       this.cliente = this.props.clients.get(this.id)
+      if (this.props?.showDialog && this.props.clients !== EMPTY_MAP && !this.cliente) this.props.history.push("/")
 
       this.name = this.cliente?.name
       this.address = this.cliente?.address
@@ -192,6 +195,7 @@ class Remove extends React.Component {
   render() {
     this.id = parseInt(this.props.match.params.id || this.id)
     this.cliente = this.props.clients.get(this.id)
+    if (this.props?.showDialog && this.props.clients !== EMPTY_MAP && !this.cliente) this.props.history.push("/")
 
     return (
       <Modal show={this.props.showDialog} onHide={this.closeModal}>
@@ -213,22 +217,29 @@ class Remove extends React.Component {
 }
 
 
-const operations = (state={map: new Map(), opCount: 0}, operation) => {
+const operations = (state={map: EMPTY_MAP, opCount: 0}, operation) => {
 
   console.log(state);
   console.log(operation);
 
+  const initMap = () => {
+    if (state.map === EMPTY_MAP) state={map: new Map(), opCount: 0}
+  }
+
   switch(operation.type) {
     case 'INIT':
-      state.map.clear()
+      if (state.map !== EMPTY_MAP) state.map.clear()
       return {map: new Map(operation.data.map(e => [e.id, e])), opCount: 0}
     case 'ADD':
+      initMap()
       state.map.state.set(operation.data.id, operation.data)
       return {map: state.map, opCount: ++state.opCount}
     case 'REMOVE':
+      initMap()
       state.map.delete(parseInt(operation.data))
       return {map: state.map, opCount: ++state.opCount}
     case 'EDIT':
+      initMap()
       if (state.map.has(operation.data?.id)) state.map.set(operation.data.id, operation.data)
       return {map: state.map, opCount: ++state.opCount}
     default:
@@ -241,6 +252,7 @@ let store = createStore(combineReducers({clientState: operations}));
 ReactDOM.render(
   <Provider store={store}>
     <HashRouter>
+      <Clienti/>
       <Switch>
         <Route exact path='/' component={Rename}/>
         <Route path='/edit/:id' render={() => <Rename showDialog={true}/>}/>
@@ -249,7 +261,6 @@ ReactDOM.render(
         <Route exact path='/' component={Remove}/>
         <Route path='/remove/:id' render={() => <Remove showDialog={true}/>}/>
       </Switch>
-      <Clienti/>
     </HashRouter>
   </Provider>,
   document.getElementById('root')
