@@ -12,6 +12,16 @@ import {Modal, Button} from 'react-bootstrap'
 import { connect, Provider } from 'react-redux';
 import { combineReducers, createStore } from 'redux';
 
+
+const editMap = (operation, data) => {
+  return {
+      type: ['INIT', 'ADD', 'REMOVE', 'EDIT'].includes(operation) ? operation : 
+          (()=>{throw new Error(`Illegal redux operation: ${operation}`)})(),
+      data: data
+  }
+}
+
+
 @connect(({clientState, dispatch}) => ({clients: clientState.map, opCount: clientState.opCount, dispatch}))
 class Clienti extends React.Component {
 
@@ -27,23 +37,7 @@ class Clienti extends React.Component {
 
     this.serverRequest = axios.get("http://localhost:8080/cliente/list")
         .then(result => {
-            let clienti = result.data.map(cliente => (
-              <tr class="jumbotron">
-                <td class="text-center">{cliente.id}</td>
-                <td class="text-center">{cliente.name}</td>
-                <td class="text-center">{cliente.address}</td>
-                <td class="text-center">
-                  <div class="custom-control custom-checkbox">
-                    <label class="sr-only position-static"></label>
-                    <input class="custom-control-input" type="checkbox" checked={cliente.public ? true : false}/>
-                    <span class="custom-control-label"></span>
-                  </div>
-                </td>
-                <td class="text-center"><Link to={`/edit/${cliente.id}`}><i class="bi bi-pencil-square btn btn-info"></i></Link></td>
-                <td class="text-center"><Link to={`/remove/${cliente.id}`}><i class="bi bi-trash btn btn-danger"></i></Link></td>
-              </tr>
-            ))
-            self.setState({clienti: clienti})
+            self.props.dispatch(editMap('INIT', result.data))
         }).catch(function(error) {
             console.log("====> " + error)
         }).then(function() {
@@ -51,25 +45,22 @@ class Clienti extends React.Component {
         })
   }
 
-  getClienti() {
-
-    let clienti=[];
-
-    for(var i=0;i<10;i++){
-      clienti.push (
-        <tr>
-          <th className="text-center">1</th>
-          <th className="text-center">MarioRossi</th>
-          <th className="text-center">24 via roma</th>
-          <th className="text-center"><input type="checkbox" checked='true' /></th>
-          <th className="text-center"><div><i className="bi bi-pencil-square btn btn-info"></i></div></th>
-          <th className="text-center"><div><i className="bi bi-trash btn btn-danger"></i></div></th>
-        </tr>
-      )
-    }
-     
-    return clienti;
-  }
+  getTable = () => [...this.props.clients.values()].map(cliente => (
+    <tr class="jumbotron">
+      <td class="text-center">{cliente.id}</td>
+      <td class="text-center">{cliente.name}</td>
+      <td class="text-center">{cliente.address}</td>
+      <td class="text-center">
+        <div class="custom-control custom-checkbox">
+          <label class="sr-only position-static"></label>
+          <input class="custom-control-input" type="checkbox" checked={cliente.public ? true : false}/>
+          <span class="custom-control-label"></span>
+        </div>
+      </td>
+      <td class="text-center"><Link to={`/edit/${cliente.id}`}><i class="bi bi-pencil-square btn btn-info"></i></Link></td>
+      <td class="text-center"><Link to={`/remove/${cliente.id}`}><i class="bi bi-trash btn btn-danger"></i></Link></td>
+    </tr>
+  ))
 
   componentDidMount() {
     this.retrieveClienti()
@@ -87,20 +78,10 @@ class Clienti extends React.Component {
             <th className="text-center">edit</th>
             <th className="text-center">delete</th>
           </tr>
-          {this.state.clienti}
+          {this.getTable()}
         </table>
       </div>
     )
-  }
-}
-
-
-const editMap = (operation, id, data) => {
-  return {
-      type: ['INIT', 'ADD', 'REMOVE', 'EDIT'].includes(operation) ? operation : 
-          (()=>{throw new Error(`Illegal redux operation: ${operation}`)})(), 
-      id: parseInt(id),
-      data: data
   }
 }
 
